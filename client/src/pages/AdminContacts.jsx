@@ -1,0 +1,104 @@
+/* eslint-disable no-unused-vars */
+import React, { useEffect, useState } from "react";
+import { useAuth } from "../store/auth";
+import { toast } from "react-toastify";
+
+const AdminContacts = () => {
+  const [contacts, setContacts] = useState([]);
+  const { authorizationToken } = useAuth();
+  const getAllContactsData = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/api/admin/contacts", {
+        method: "GET",
+        headers: {
+          Authorization: authorizationToken,
+        },
+      });
+      const data = await response.json();
+      // setContacts(data);
+      if (response.ok) {
+        setContacts(data);
+      } else {
+        setContacts([]);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const deleteContactsById = async (id) => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/admin/contacts/delete/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: authorizationToken,
+          },
+        }
+      );
+      const responseData = response.json();
+      console.log(responseData);
+      if (response.ok) {
+        // toast.success(
+        //   responseData.message
+        //     ? responseData.message
+        //     : responseData.extraDetails
+        // );
+        toast.success("Contacts deleted successfully");
+        getAllContactsData();
+      } else {
+        toast("not deleted ");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  useEffect(() => {
+    getAllContactsData();
+  }, []);
+
+  return (
+    <>
+      <section className="admin-users-section">
+        <div className="container">
+          <h1>Admin Contacts Data</h1>
+        </div>
+        <div className="container admin-users">
+          <table>
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Message</th>
+                <th>Delete</th>
+              </tr>
+            </thead>
+            <tbody>
+              {contacts.map((currContact, index) => {
+                return (
+                  <tr key={index}>
+                    <td> {currContact.username}</td>
+                    <td> {currContact.email}</td>
+                    <td> {currContact.message}</td>
+
+                    <td>
+                      <button
+                        onClick={() => {
+                          deleteContactsById(currContact._id);
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </>
+  );
+};
+
+export default AdminContacts;
